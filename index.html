@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Faren Safari — Cornell MPS Accounting</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Variables ── */
+    :root {
+      --bg: #f5f0e8;
+      --ink: #1a1410;
+      --muted: #6b5f52;
+      --accent: #b85c2c;
+      --accent2: #2c6b8a;
+      --rule: #d4c9b8;
+      --card: #ede7d9;
+      --serif: 'Cormorant Garamond', Georgia, serif;
+      --mono: 'DM Mono', monospace;
+      --sans: 'DM Sans', sans-serif;
+    }
+
+    /* ── Reset ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--sans);
+      font-weight: 300;
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    /* ── Noise texture overlay ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.35;
+    }
+
+    /* ── Nav ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.2rem 3rem;
+      background: rgba(245, 240, 232, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--rule);
+    }
+    .nav-brand {
+      font-family: var(--serif);
+      font-size: 1.1rem;
+      font-weight: 400;
+      letter-spacing: 0.02em;
+      color: var(--ink);
+      text-decoration: none;
+    }
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--accent); }
+
+    /* ── Hero ── */
+    #hero {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+      padding: 8rem 3rem 4rem;
+      gap: 4rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .hero-text { opacity: 0; transform: translateY(30px); }
+    .hero-text.visible { animation: fadeUp 0.9s ease forwards; }
+
+    .hero-eyebrow {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1.2rem;
+    }
+    .hero-name {
+      font-family: var(--serif);
+      font-size: clamp(3.5rem, 6vw, 5.5rem);
+      font-weight: 300;
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+      margin-bottom: 0.5rem;
+    }
+    .hero-name em {
+      font-style: italic;
+      color: var(--accent);
+    }
+    .hero-role {
+      font-family: var(--serif);
+      font-size: 1.3rem;
+      font-weight: 300;
+      color: var(--muted);
+      font-style: italic;
+      margin-bottom: 2rem;
+    }
+    .hero-bio {
+      font-size: 0.95rem;
+      color: var(--muted);
+      max-width: 440px;
+      margin-bottom: 2.5rem;
+      line-height: 1.8;
+    }
+    .hero-cta-group { display: flex; gap: 1rem; flex-wrap: wrap; }
+    .btn {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 0.75rem 1.8rem;
+      border: 1px solid;
+      text-decoration: none;
+      transition: all 0.25s;
+      cursor: pointer;
+      display: inline-block;
+    }
+    .btn-primary {
+      background: var(--ink);
+      color: var(--bg);
+      border-color: var(--ink);
+    }
+    .btn-primary:hover { background: var(--accent); border-color: var(--accent); }
+    .btn-outline {
+      background: transparent;
+      color: var(--ink);
+      border-color: var(--rule);
+    }
+    .btn-outline:hover { border-color: var(--ink); }
+
+    /* Hero visual */
+    .hero-visual {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+    }
+    .hero-visual.visible { animation: fadeIn 1.1s 0.3s ease forwards; }
+    .hero-card {
+      width: 340px;
+      height: 420px;
+      background: var(--card);
+      border: 1px solid var(--rule);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2.5rem;
+      text-align: center;
+    }
+    .hero-card::before {
+      content: '';
+      position: absolute;
+      inset: 8px;
+      border: 1px solid var(--rule);
+      pointer-events: none;
+    }
+    .hero-avatar {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--serif);
+      font-size: 2.5rem;
+      font-weight: 300;
+      color: white;
+      margin-bottom: 1.5rem;
+      letter-spacing: 0.05em;
+    }
+    .hero-card-name {
+      font-family: var(--serif);
+      font-size: 1.4rem;
+      font-weight: 400;
+      margin-bottom: 0.3rem;
+    }
+    .hero-card-tag {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1.5rem;
+    }
+    .hero-card-details {
+      font-size: 0.78rem;
+      color: var(--muted);
+      line-height: 2;
+    }
+    .hero-card-details span {
+      display: block;
+      font-family: var(--mono);
+    }
+    .hero-float-tag {
+      position: absolute;
+      background: var(--ink);
+      color: var(--bg);
+      font-family: var(--mono);
+      font-size: 0.63rem;
+      letter-spacing: 0.1em;
+      padding: 0.4rem 0.9rem;
+    }
+    .hero-float-tag:nth-child(2) { top: -14px; right: -20px; }
+    .hero-float-tag:nth-child(3) { bottom: -14px; left: -20px; background: var(--accent); }
+
+    /* ── Divider ── */
+    .section-divider {
+      max-width: 1100px;
+      margin: 0 auto;
+      border: none;
+      border-top: 1px solid var(--rule);
+    }
+
+    /* ── Section base ── */
+    section { padding: 6rem 3rem; max-width: 1100px; margin: 0 auto; }
+    .section-header {
+      display: flex;
+      align-items: baseline;
+      gap: 1.5rem;
+      margin-bottom: 3.5rem;
+    }
+    .section-num {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: var(--accent);
+      letter-spacing: 0.1em;
+    }
+    .section-title {
+      font-family: var(--serif);
+      font-size: clamp(2rem, 3.5vw, 2.8rem);
+      font-weight: 300;
+      letter-spacing: -0.01em;
+      line-height: 1.1;
+    }
+    .section-line {
+      flex: 1;
+      height: 1px;
+      background: var(--rule);
+      margin-bottom: 4px;
+    }
+
+    /* ── About ── */
+    #about .about-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 5rem;
+      align-items: start;
+    }
+    .about-body {
+      font-family: var(--serif);
+      font-size: 1.2rem;
+      font-weight: 300;
+      line-height: 1.85;
+      color: var(--ink);
+    }
+    .about-body p + p { margin-top: 1.2em; }
+    .about-body strong { font-weight: 600; color: var(--accent); }
+    .about-aside { display: flex; flex-direction: column; gap: 1.5rem; margin-top: 0.5rem; }
+    .info-block {
+      border-left: 2px solid var(--rule);
+      padding-left: 1.2rem;
+    }
+    .info-block-label {
+      font-family: var(--mono);
+      font-size: 0.63rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.3rem;
+    }
+    .info-block-value {
+      font-size: 0.88rem;
+      color: var(--ink);
+      line-height: 1.5;
+    }
+    .interests-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 2rem;
+    }
+    .interest-pill {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.35rem 0.85rem;
+      border: 1px solid var(--rule);
+      color: var(--muted);
+      transition: all 0.2s;
+    }
+    .interest-pill:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── Skills ── */
+    #skills .skills-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+    .skill-card {
+      background: var(--card);
+      border: 1px solid var(--rule);
+      padding: 2rem;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.25s, box-shadow 0.25s;
+    }
+    .skill-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.08); }
+    .skill-card::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      transform: scaleX(0);
+      transition: transform 0.3s;
+      transform-origin: left;
+    }
+    .skill-card:hover::after { transform: scaleX(1); }
+    .skill-cat {
+      font-family: var(--mono);
+      font-size: 0.63rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1rem;
+    }
+    .skill-card h3 {
+      font-family: var(--serif);
+      font-size: 1.3rem;
+      font-weight: 400;
+      margin-bottom: 1rem;
+    }
+    .skill-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .skill-tag {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      padding: 0.3rem 0.7rem;
+      border: 1px solid var(--rule);
+      color: var(--muted);
+    }
+
+    /* ── Education ── */
+    #education .edu-list { display: flex; flex-direction: column; gap: 0; }
+    .edu-item {
+      display: grid;
+      grid-template-columns: 160px 1fr;
+      gap: 3rem;
+      padding: 2.5rem 0;
+      border-bottom: 1px solid var(--rule);
+      opacity: 0;
+      transform: translateX(-20px);
+      transition: all 0.6s ease;
+    }
+    .edu-item.visible { opacity: 1; transform: none; }
+    .edu-year {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+      padding-top: 0.4rem;
+    }
+    .edu-school {
+      font-family: var(--serif);
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin-bottom: 0.2rem;
+    }
+    .edu-degree {
+      font-family: var(--serif);
+      font-size: 0.95rem;
+      font-style: italic;
+      color: var(--muted);
+      margin-bottom: 0.8rem;
+    }
+    .edu-notes { font-size: 0.83rem; color: var(--muted); line-height: 1.7; }
+    .edu-badge {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 0.2rem 0.6rem;
+      background: var(--accent);
+      color: white;
+      margin-top: 0.5rem;
+    }
+
+    /* ── Experience ── */
+    #experience .exp-list { display: flex; flex-direction: column; gap: 0; }
+    .exp-item {
+      display: grid;
+      grid-template-columns: 160px 1fr;
+      gap: 3rem;
+      padding: 2.5rem 0;
+      border-bottom: 1px solid var(--rule);
+      opacity: 0;
+      transform: translateX(-20px);
+      transition: all 0.6s ease;
+    }
+    .exp-item.visible { opacity: 1; transform: none; }
+    .exp-period {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+      padding-top: 0.4rem;
+    }
+    .exp-location {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: var(--accent2);
+      margin-top: 0.3rem;
+    }
+    .exp-role {
+      font-family: var(--serif);
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin-bottom: 0.15rem;
+    }
+    .exp-org {
+      font-family: var(--serif);
+      font-size: 0.95rem;
+      font-style: italic;
+      color: var(--muted);
+      margin-bottom: 1rem;
+    }
+    .exp-bullets { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+    .exp-bullets li {
+      font-size: 0.86rem;
+      color: var(--muted);
+      padding-left: 1.2rem;
+      position: relative;
+      line-height: 1.6;
+    }
+    .exp-bullets li::before {
+      content: '—';
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+      font-size: 0.75rem;
+    }
+
+    /* ── Projects ── */
+    #projects .proj-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+    .proj-card {
+      background: var(--card);
+      border: 1px solid var(--rule);
+      padding: 2rem;
+      position: relative;
+      transition: transform 0.25s;
+    }
+    .proj-card:hover { transform: translateY(-3px); }
+    .proj-card-tag {
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent2);
+      margin-bottom: 0.8rem;
+    }
+    .proj-card h3 {
+      font-family: var(--serif);
+      font-size: 1.1rem;
+      font-weight: 400;
+      margin-bottom: 0.8rem;
+      line-height: 1.3;
+    }
+    .proj-card p { font-size: 0.83rem; color: var(--muted); line-height: 1.7; }
+    .proj-card-footer {
+      margin-top: 1.2rem;
+      font-family: var(--mono);
+      font-size: 0.63rem;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+    }
+
+    /* ── Contact / Footer ── */
+    #contact {
+      background: var(--ink);
+      color: var(--bg);
+      max-width: 100%;
+      padding: 5rem 3rem;
+    }
+    .contact-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: center;
+    }
+    .contact-headline {
+      font-family: var(--serif);
+      font-size: clamp(2.2rem, 4vw, 3.5rem);
+      font-weight: 300;
+      line-height: 1.1;
+      margin-bottom: 1rem;
+    }
+    .contact-headline em { font-style: italic; color: var(--accent); }
+    .contact-sub { font-size: 0.9rem; color: rgba(245,240,232,0.55); line-height: 1.7; }
+    .contact-links { display: flex; flex-direction: column; gap: 1.2rem; }
+    .contact-link {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      text-decoration: none;
+      color: var(--bg);
+      transition: color 0.2s;
+    }
+    .contact-link:hover { color: var(--accent); }
+    .contact-link-label {
+      font-family: var(--mono);
+      font-size: 0.63rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: rgba(245,240,232,0.4);
+      min-width: 70px;
+    }
+    .contact-link-value { font-size: 0.9rem; }
+    .footer-bar {
+      max-width: 1100px;
+      margin: 3rem auto 0;
+      padding-top: 2rem;
+      border-top: 1px solid rgba(245,240,232,0.12);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .footer-copy {
+      font-family: var(--mono);
+      font-size: 0.63rem;
+      color: rgba(245,240,232,0.3);
+      letter-spacing: 0.08em;
+    }
+    .footer-status {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-family: var(--mono);
+      font-size: 0.63rem;
+      color: #4caf50;
+      letter-spacing: 0.08em;
+    }
+    .status-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: #4caf50;
+      animation: pulse 2s infinite;
+    }
+
+    /* ── Animations ── */
+    @keyframes fadeUp {
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      to { opacity: 1; }
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.8); }
+    }
+
+    /* ── Scroll reveal ── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .reveal.visible { opacity: 1; transform: none; }
+
+    /* ── Responsive ── */
+    @media (max-width: 900px) {
+      nav { padding: 1rem 1.5rem; }
+      .nav-links { gap: 1.2rem; }
+      #hero { grid-template-columns: 1fr; padding: 7rem 1.5rem 3rem; gap: 2.5rem; }
+      .hero-visual { order: -1; }
+      .hero-card { width: 280px; height: 350px; }
+      #about .about-grid { grid-template-columns: 1fr; gap: 2.5rem; }
+      #skills .skills-grid { grid-template-columns: 1fr 1fr; }
+      .edu-item, .exp-item { grid-template-columns: 1fr; gap: 0.5rem; }
+      #projects .proj-grid { grid-template-columns: 1fr; }
+      .contact-inner { grid-template-columns: 1fr; gap: 2.5rem; }
+      section { padding: 4rem 1.5rem; }
+    }
+    @media (max-width: 600px) {
+      #skills .skills-grid { grid-template-columns: 1fr; }
+      .nav-links { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav>
+    <a href="#hero" class="nav-brand">Faren Safari</a>
+    <ul class="nav-links">
+      <li><a href="#about">About</a></li>
+      <li><a href="#skills">Skills</a></li>
+      <li><a href="#education">Education</a></li>
+      <li><a href="#experience">Experience</a></li>
+      <li><a href="#projects">Projects</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+  </nav>
+
+  <!-- Hero -->
+  <div id="hero">
+    <div class="hero-text">
+      <p class="hero-eyebrow">Graduate Student &amp; Accounting Professional</p>
+      <h1 class="hero-name">Farzaneh<br><em>"Faren"</em><br>Safari</h1>
+      <p class="hero-role">MPS Accounting · Cornell University</p>
+      <p class="hero-bio">
+        CPA-track graduate student at Cornell's SC Johnson College of Business, combining a background in industrial engineering, international finance, and hands-on tax preparation to bridge quantitative rigor with financial insight.
+      </p>
+      <div class="hero-cta-group">
+        <a href="#experience" class="btn btn-primary">View My Work</a>
+        <a href="#contact" class="btn btn-outline">Get In Touch</a>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="hero-card">
+        <div class="hero-avatar">FS</div>
+        <p class="hero-card-name">Faren Safari</p>
+        <p class="hero-card-tag">Cornell · Class of 2026</p>
+        <div class="hero-card-details">
+          <span>📍 Ithaca, NY</span>
+          <span>🎓 MPS Accounting (STEM)</span>
+          <span>📜 CPA Eligible May 2026</span>
+          <span>🇺🇸 U.S. Permanent Resident</span>
+        </div>
+        <span class="hero-float-tag">Merit Scholar</span>
+        <span class="hero-float-tag">VITA Certified</span>
+      </div>
+    </div>
+  </div>
+
+  <hr class="section-divider" />
+
+  <!-- About -->
+  <section id="about">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <h2 class="section-title">About Me</h2>
+      <div class="section-line"></div>
+    </div>
+    <div class="about-grid reveal">
+      <div class="about-body">
+        <p>
+          I'm <strong>Faren Safari</strong>, a graduate accounting student at Cornell's SC Johnson College of Business pursuing my MPS in Accounting with a STEM designation. My path has been anything but linear — I started with a B.S. in Industrial Engineering in Iran, moved into project control for a major construction firm, and ultimately found my calling at the intersection of <strong>financial analysis, accounting, and data-driven decision-making</strong>.
+        </p>
+        <p>
+          Before Cornell, I studied at Ithaca College and the University of Missouri Kansas City, earning near-perfect GPAs at both while receiving merit scholarships. I'm drawn to the kind of accounting work that requires real critical thinking — equity valuation, international finance, tax preparation for underserved communities.
+        </p>
+        <p>
+          Outside the classroom, I'm a student-athlete on the <strong>Ithaca College Rowing team</strong>, an avid half-marathon runner, an enthusiastic baker, and a player of the Santoor — a Persian hammered dulcimer. I believe the discipline of endurance sport and music translate directly into how I approach complex financial problems.
+        </p>
+        <div class="interests-list">
+          <span class="interest-pill">📚 Books</span>
+          <span class="interest-pill">⛷ Skiing</span>
+          <span class="interest-pill">🏃 Half-Marathon</span>
+          <span class="interest-pill">🍞 Baking</span>
+          <span class="interest-pill">🎵 Santoor</span>
+          <span class="interest-pill">🚣 Rowing</span>
+        </div>
+      </div>
+      <div class="about-aside">
+        <div class="info-block">
+          <p class="info-block-label">Location</p>
+          <p class="info-block-value">Ithaca, NY 14850</p>
+        </div>
+        <div class="info-block">
+          <p class="info-block-label">Email</p>
+          <p class="info-block-value">fs498@cornell.edu</p>
+        </div>
+        <div class="info-block">
+          <p class="info-block-label">LinkedIn</p>
+          <p class="info-block-value">linkedin.com/in/farzaneh-safari</p>
+        </div>
+        <div class="info-block">
+          <p class="info-block-label">Work Authorization</p>
+          <p class="info-block-value">U.S. Permanent Resident<br>Authorized to work in the U.S.</p>
+        </div>
+        <div class="info-block">
+          <p class="info-block-label">Certifications</p>
+          <p class="info-block-value">VITA Certified<br>CPA Eligible — May 2026</p>
+        </div>
+        <div class="info-block">
+          <p class="info-block-label">Languages</p>
+          <p class="info-block-value">English · Persian (Farsi)</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="section-divider" />
+
+  <!-- Skills -->
+  <section id="skills">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <h2 class="section-title">Skills &amp; Tools</h2>
+      <div class="section-line"></div>
+    </div>
+    <div class="skills-grid">
+
+      <div class="skill-card reveal">
+        <p class="skill-cat">Finance &amp; Accounting</p>
+        <h3>Financial Analysis</h3>
+        <div class="skill-tags">
+          <span class="skill-tag">DCF Valuation</span>
+          <span class="skill-tag">Equity Research</span>
+          <span class="skill-tag">Residual Income</span>
+          <span class="skill-tag">Comparable Co.</span>
+          <span class="skill-tag">Financial Modeling</span>
+          <span class="skill-tag">FX Risk</span>
+          <span class="skill-tag">Intl. Finance</span>
+        </div>
+      </div>
+
+      <div class="skill-card reveal">
+        <p class="skill-cat">Tax &amp; Compliance</p>
+        <h3>Tax Preparation</h3>
+        <div class="skill-tags">
+          <span class="skill-tag">Federal Tax Returns</span>
+          <span class="skill-tag">IRS Compliance</span>
+          <span class="skill-tag">VITA Standards</span>
+          <span class="skill-tag">TaxSlayer</span>
+          <span class="skill-tag">Tax Law</span>
+          <span class="skill-tag">Low-Income Credit</span>
+        </div>
+      </div>
+
+      <div class="skill-card reveal">
+        <p class="skill-cat">Data &amp; Technology</p>
+        <h3>Analytics Tools</h3>
+        <div class="skill-tags">
+          <span class="skill-tag">Tableau</span>
+          <span class="skill-tag">Alteryx</span>
+          <span class="skill-tag">Microsoft Excel</span>
+          <span class="skill-tag">Excel Automation</span>
+          <span class="skill-tag">Financial Reporting</span>
+        </div>
+      </div>
+
+      <div class="skill-card reveal">
+        <p class="skill-cat">Project Management</p>
+        <h3>Planning &amp; Control</h3>
+        <div class="skill-tags">
+          <span class="skill-tag">Primavera P6</span>
+          <span class="skill-tag">Microsoft Project</span>
+          <span class="skill-tag">Baseline Scheduling</span>
+          <span class="skill-tag">Cost Estimation</span>
+          <span class="skill-tag">Resource Allocation</span>
+        </div>
+      </div>
+
+      <div class="skill-card reveal">
+        <p class="skill-cat">Accounting Core</p>
+        <h3>Accounting Practice</h3>
+        <div class="skill-tags">
+          <span class="skill-tag">Reconciliation</span>
+          <span class="skill-tag">Invoice Verification</span>
+          <span class="skill-tag">Expense Reporting</span>
+          <span class="skill-tag">Financial Policies</span>
+          <span class="skill-tag">Govt. Accounting</span>
+        </div>
+      </div>
+
+      <div class="skill-card reveal">
+        <p class="skill-cat">Soft Skills</p>
+        <h3>Leadership &amp; Analysis</h3>
+        <div class="skill-tags">
+          <span class="skill-tag">Critical Thinking</span>
+          <span class="skill-tag">Research</span>
+          <span class="skill-tag">Client Relations</span>
+          <span class="skill-tag">Cross-cultural Comm.</span>
+          <span class="skill-tag">Attention to Detail</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <hr class="section-divider" />
+
+  <!-- Education -->
+  <section id="education">
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <h2 class="section-title">Education</h2>
+      <div class="section-line"></div>
+    </div>
+    <div class="edu-list">
+
+      <div class="edu-item">
+        <div class="edu-year">2025 – 2026<br>(Expected)</div>
+        <div>
+          <p class="edu-school">Cornell University, SC Johnson College of Business</p>
+          <p class="edu-degree">Master of Professional Studies in Management — Accounting Specialization (STEM)</p>
+          <p class="edu-notes">
+            Recipient of the MPS Accounting Merit Scholarship ($10K). CPA eligible upon graduation May 2026.
+            Coursework in Advanced Financial Statement Analysis and International Finance.
+          </p>
+          <span class="edu-badge">Merit Scholar · STEM Designated</span>
+        </div>
+      </div>
+
+      <div class="edu-item">
+        <div class="edu-year">Aug 2024 –<br>May 2025</div>
+        <div>
+          <p class="edu-school">Ithaca College</p>
+          <p class="edu-degree">Master in Accounting</p>
+          <p class="edu-notes">GPA: 3.9 · Student Athlete, Ithaca College Rowing Team.</p>
+        </div>
+      </div>
+
+      <div class="edu-item">
+        <div class="edu-year">Jan –<br>May 2024</div>
+        <div>
+          <p class="edu-school">University of Missouri Kansas City</p>
+          <p class="edu-degree">MBA Program</p>
+          <p class="edu-notes">GPA: 3.9 · MBA Scholarship recipient ($9K).</p>
+          <span class="edu-badge">MBA Scholar</span>
+        </div>
+      </div>
+
+      <div class="edu-item">
+        <div class="edu-year">Sep 2009 –<br>Jun 2013</div>
+        <div>
+          <p class="edu-school">Golpayegan University of Technology</p>
+          <p class="edu-degree">Bachelor of Sciences in Industrial Engineering</p>
+          <p class="edu-notes">Isfahan, Iran. Foundation in systems thinking, operations research, and quantitative analysis.</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <hr class="section-divider" />
+
+  <!-- Experience -->
+  <section id="experience">
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <h2 class="section-title">Experience</h2>
+      <div class="section-line"></div>
+    </div>
+    <div class="exp-list">
+
+      <div class="exp-item">
+        <div>
+          <p class="exp-period">Jan – Feb 2026</p>
+          <p class="exp-location">Anchorage, AK</p>
+        </div>
+        <div>
+          <p class="exp-role">Tax Preparer</p>
+          <p class="exp-org">ABDC – Volunteer Tax Program</p>
+          <ul class="exp-bullets">
+            <li>Prepared 60 tax returns for low-income clients in Napakiak and Oscarville, maximizing Alaska Credit refunds.</li>
+            <li>Completed a 14-week tax preparation course with case studies and 35+ hours of specialized training.</li>
+            <li>Resolved tax discrepancies by applying tax law expertise, ensuring full IRS compliance and VITA standards.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="exp-item">
+        <div>
+          <p class="exp-period">Jun – Aug 2025</p>
+          <p class="exp-location">Ithaca, NY</p>
+        </div>
+        <div>
+          <p class="exp-role">Accounting &amp; Finance Intern</p>
+          <p class="exp-org">Ithaca City Hall</p>
+          <ul class="exp-bullets">
+            <li>Developed automated Excel templates that reduced monthly reconciliation time and improved reporting accuracy.</li>
+            <li>Led verification of invoices and expense reports, achieving 100% compliance with city financial policies.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="exp-item">
+        <div>
+          <p class="exp-period">Mar 2019 –<br>Mar 2022</p>
+          <p class="exp-location">Isfahan, Iran</p>
+        </div>
+        <div>
+          <p class="exp-role">Project Control Specialist</p>
+          <p class="exp-org">Noor Construction Co.</p>
+          <ul class="exp-bullets">
+            <li>Developed integrated baseline schedules and cost estimates using Primavera P6 and Microsoft Project.</li>
+            <li>Led monitoring and reporting of project performance against baseline plans across multiple projects.</li>
+            <li>Implemented resource allocation strategies that optimized labor and material usage, reducing operational waste.</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <hr class="section-divider" />
+
+  <!-- Projects -->
+  <section id="projects">
+    <div class="section-header">
+      <span class="section-num">05</span>
+      <h2 class="section-title">Academic Projects</h2>
+      <div class="section-line"></div>
+    </div>
+    <div class="proj-grid">
+
+      <div class="proj-card reveal">
+        <p class="proj-card-tag">Equity Analysis · Cornell University</p>
+        <h3>End-to-End Equity Valuation of a Publicly Traded Company</h3>
+        <p>
+          Conducted comprehensive equity analysis including integrated financial statement forecasting, discounted cash flow (DCF), residual income modeling, and comparable company valuation — synthesizing multiple methodologies into a cohesive investment thesis.
+        </p>
+        <p class="proj-card-footer">Prof. Nick Geust · Advanced Financial Statement Analysis · Fall 2025</p>
+      </div>
+
+      <div class="proj-card reveal">
+        <p class="proj-card-tag">International Finance · Cornell University</p>
+        <h3>International Valuation of a Recently Listed EV Firm</h3>
+        <p>
+          Produced an in-depth cross-border valuation of an Electric Vehicle company from a U.S. investor perspective, incorporating relative valuation, live market data analysis, and assessment of foreign exchange, political, and competitive risks.
+        </p>
+        <p class="proj-card-footer">Prof. Warren Bailey · International Finance Cases · Fall 2025</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Contact -->
+  <section id="contact" style="padding: 5rem 3rem;">
+    <div class="contact-inner">
+      <div>
+        <h2 class="contact-headline">Let's <em>connect</em> and build something together.</h2>
+        <p class="contact-sub">I'm currently seeking full-time opportunities in accounting, financial analysis, or related fields — starting May 2026. Feel free to reach out.</p>
+      </div>
+      <div class="contact-links">
+        <a href="mailto:fs498@cornell.edu" class="contact-link">
+          <span class="contact-link-label">Email</span>
+          <span class="contact-link-value">fs498@cornell.edu</span>
+        </a>
+        <a href="tel:7859790456" class="contact-link">
+          <span class="contact-link-label">Phone</span>
+          <span class="contact-link-value">(785) 979-0456</span>
+        </a>
+        <a href="https://www.linkedin.com/in/farzaneh-safari" target="_blank" rel="noopener" class="contact-link">
+          <span class="contact-link-label">LinkedIn</span>
+          <span class="contact-link-value">linkedin.com/in/farzaneh-safari</span>
+        </a>
+        <a href="#hero" class="contact-link">
+          <span class="contact-link-label">Location</span>
+          <span class="contact-link-value">Ithaca, NY 14850</span>
+        </a>
+      </div>
+    </div>
+    <div class="footer-bar">
+      <span class="footer-copy">© 2026 Farzaneh Safari · All rights reserved</span>
+      <span class="footer-status">
+        <span class="status-dot"></span>
+        Open to opportunities
+      </span>
+    </div>
+  </section>
+
+  <script>
+    // ── Hero entrance ──
+    window.addEventListener('load', () => {
+      document.querySelector('.hero-text').classList.add('visible');
+      setTimeout(() => document.querySelector('.hero-visual').classList.add('visible'), 200);
+    });
+
+    // ── Scroll reveal ──
+    const revealEls = document.querySelectorAll('.reveal, .edu-item, .exp-item');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry, i) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => entry.target.classList.add('visible'), i * 80);
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12 });
+    revealEls.forEach(el => observer.observe(el));
+
+    // ── Nav active state ──
+    const sections = document.querySelectorAll('section[id], div[id]');
+    const navLinks = document.querySelectorAll('.nav-links a');
+    const navObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          navLinks.forEach(link => {
+            link.style.color = '';
+            if (link.getAttribute('href') === '#' + entry.target.id) {
+              link.style.color = 'var(--accent)';
+            }
+          });
+        }
+      });
+    }, { threshold: 0.4 });
+    sections.forEach(s => navObserver.observe(s));
+  </script>
+</body>
+</html>
